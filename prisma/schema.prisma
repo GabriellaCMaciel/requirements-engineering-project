@@ -1,0 +1,168 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+// =====================================================================
+// USUÁRIOS
+// role: "CLIENT" (cliente comum) ou "ADMIN" (administrador mestre).
+// A estrutura permite, no futuro, novos perfis (ex.: "PROFESSIONAL").
+// =====================================================================
+model User {
+  id            String        @id @default(cuid())
+  name          String?
+  email         String        @unique
+  emailVerified DateTime?
+  image         String?
+  phone         String?
+  cep           String?
+  password      String?
+  role          String        @default("CLIENT")
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  accounts      Account[]
+  sessions      Session[]
+  orders        Order[]
+  appointments  Appointment[]
+}
+
+// Tabelas padrão do Auth.js (estrutura pronta para futuro login Google)
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// =====================================================================
+// PRODUTOS (DADOS DEMONSTRATIVOS - substituir pelos dados reais)
+// serviceArea liga o produto a uma área de serviço para o quiz sugerir.
+// =====================================================================
+model Product {
+  id          String      @id
+  name        String
+  description String
+  price       Float
+  category    String
+  serviceArea String
+  image       String
+  images      String[]
+  tags        String[]
+  available   Boolean     @default(true)
+  isDemo      Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  orderItems  OrderItem[]
+}
+
+// =====================================================================
+// PEDIDOS
+// Um pedido pode ter produtos, um serviço (agendamento) ou ambos.
+// =====================================================================
+model Order {
+  id                 String       @id @default(cuid())
+  code               String       @unique
+  userId             String
+  user               User         @relation(fields: [userId], references: [id])
+  status             String       @default("AGUARDANDO_PAGAMENTO")
+  productsSubtotal   Float        @default(0)
+  serviceValue       Float        @default(0)
+  discount           Float        @default(0)
+  total              Float        @default(0)
+  problemDescription String?
+  addressCep         String
+  addressStreet      String
+  addressNumber      String
+  addressComplement  String?
+  addressDistrict    String
+  addressCity        String
+  addressUf          String
+  addressReference   String?
+  paymentMethod      String       @default("PAGBANK_LINK")
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  items              OrderItem[]
+  appointment        Appointment?
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  name      String
+  unitPrice Float
+  quantity  Int
+
+  @@index([orderId])
+}
+
+// =====================================================================
+// AGENDAMENTOS — funcionalidade principal
+// date: "AAAA-MM-DD" | startMin/endMin: minutos desde 00:00 (ex.: 14:00 = 840)
+// Guardar a data como texto e o horário em minutos evita problemas de fuso
+// e deixa a regra de conflito simples: A.start < B.end && B.start < A.end
+// =====================================================================
+model Appointment {
+  id                 String   @id @default(cuid())
+  orderId            String?  @unique
+  order              Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  userId             String?
+  user               User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  customerName       String
+  customerPhone      String
+  customerEmail      String?
+  serviceArea        String
+  professional       String
+  serviceType        String
+  price              Float
+  problemDescription String
+  urgency            String
+  date               String
+  startMin           Int
+  endMin             Int
+  status             String   @default("AGENDADO")
+  address            String?
+  notes              String?
+  isDemo             Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([professional, date])
+  @@index([date])
+  @@index([userId])
+}

@@ -1,0 +1,132 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =====================================================================
+ * IDENTIDADE VISUAL JC RESOLVE (valores em HSL)
+ * Azul-marinho #081A30 → 213 71% 11%  (marca, cabeçalho, fundos institucionais)
+ * Azul profundo #102B49 → 212 64% 17%  (seções e cartões de apoio)
+ * Verde-limão  #C7F36A → 79 85% 68%   (botões e chamadas para ação)
+ * Branco #FFFFFF e Cinza-claro #F5F7F8 → áreas de leitura
+ * ===================================================================== */
+@layer base {
+  :root {
+    --navy: 213 71% 11%;
+    --deep: 212 64% 17%;
+    --lime: 79 85% 68%;
+
+    --background: 0 0% 100%;
+    --foreground: 213 71% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 213 71% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 213 71% 11%;
+
+    --primary: 79 85% 68%;
+    --primary-foreground: 213 71% 11%;
+
+    --secondary: 212 64% 17%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 200 18% 97%;
+    --muted-foreground: 213 18% 38%;
+
+    --accent: 205 30% 93%;
+    --accent-foreground: 213 71% 11%;
+
+    --success: 145 63% 32%;
+    --warning: 35 92% 45%;
+
+    --destructive: 0 72% 48%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 20% 89%;
+    --input: 210 20% 85%;
+    --ring: 212 64% 30%;
+
+    --radius: 0.625rem;
+
+    --duration-fast: 150ms;
+    --duration-normal: 250ms;
+    --duration-slow: 350ms;
+
+    --chart-1: 212 64% 30%;
+    --chart-2: 79 70% 50%;
+    --chart-3: 199 89% 48%;
+    --chart-4: 25 95% 53%;
+    --chart-5: 213 71% 11%;
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display), var(--font-sans), sans-serif;
+    letter-spacing: -0.02em;
+  }
+
+  /* Foco visível para navegação por teclado (acessibilidade) */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: hsl(var(--lime) / 0.6);
+    color: hsl(var(--navy));
+  }
+}
+
+@layer components {
+  /* Container padrão: conteúdo centralizado com no máximo 1200px */
+  .container-jc {
+    @apply mx-auto w-full max-w-[1200px] px-4 sm:px-6;
+  }
+  /* Campo de formulário padrão */
+  .field {
+    @apply h-11 w-full rounded-lg border border-input bg-background px-3 text-sm text-foreground shadow-sm transition placeholder:text-muted-foreground/70 focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-60;
+  }
+  .field-label {
+    @apply mb-1.5 block text-sm font-medium text-foreground;
+  }
+  .card-jc {
+    @apply rounded-xl bg-card text-card-foreground shadow-[0_2px_10px_-2px_rgba(8,26,48,0.10)] transition-shadow duration-normal;
+  }
+  .badge-sim {
+    @apply inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-800;
+  }
+}
+
+@layer utilities {
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+  .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
+  .hero-overlay {
+    background: linear-gradient(100deg, hsl(var(--navy) / 0.96) 0%, hsl(var(--navy) / 0.85) 45%, hsl(var(--navy) / 0.35) 100%);
+  }
+  .grid-pattern {
+    background-image: radial-gradient(hsl(var(--lime) / 0.12) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
