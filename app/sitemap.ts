@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import type { MetadataRoute } from 'next';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/db';
