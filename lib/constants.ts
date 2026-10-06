@@ -15,6 +15,10 @@ export const WHATSAPP_DISPLAY = '+55 61 99608-9673';
  */
 export const PAGBANK_LINK = 'https://pagbank.com.br/';
 
+/** Instagram profissional da JC Resolve */
+export const INSTAGRAM_URL = 'https://www.instagram.com/jcresolve.valparaiso/';
+export const INSTAGRAM_HANDLE = '@jcresolve.valparaiso';
+
 /** Área de atendimento informada no briefing */
 export const SERVICE_REGION = 'Valparaíso de Goiás e região';
 
@@ -58,8 +62,8 @@ export const SERVICE_AREAS: Record<ServiceArea, { label: string; short: string; 
 export type Professional = 'GERAL' | 'HIDRAULICA' | 'ELETRICISTA' | 'REFRIGERACAO';
 
 export const PROFESSIONALS: Record<Professional, { label: string; quizLabel: string }> = {
-  GERAL: { label: 'Geral', quizLabel: 'Geral / Reparos gerais' },
-  HIDRAULICA: { label: 'Hidráulica', quizLabel: 'Hidráulico' },
+  GERAL: { label: 'Reparos gerais', quizLabel: 'Geral / Reparos gerais' },
+  HIDRAULICA: { label: 'Hidráulico', quizLabel: 'Hidráulico' },
   ELETRICISTA: { label: 'Eletricista', quizLabel: 'Eletricista' },
   REFRIGERACAO: { label: 'Refrigeração', quizLabel: 'Refrigeração' },
 };

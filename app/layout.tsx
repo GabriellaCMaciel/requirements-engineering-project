@@ -13,13 +13,23 @@ export const dynamic = 'force-dynamic';
 const dmSans = DM_Sans({ subsets: ['latin'], variable: '--font-sans' });
 const manrope = Manrope({ subsets: ['latin'], variable: '--font-display' });
 
+/* URL pública do site (usada nas imagens de compartilhamento Open Graph).
+ * Ordem: NEXT_PUBLIC_SITE_URL > domínio de produção da Vercel > NEXTAUTH_URL > localhost. */
+function siteUrl(): string {
+  const vercelProd = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  return process.env.NEXT_PUBLIC_SITE_URL ?? (vercelProd ? `https://${vercelProd}` : undefined) ?? process.env.NEXTAUTH_URL ?? 'http://localhost:3000';
+}
+
 export async function generateMetadata() {
   return {
-    metadataBase: new URL(process.env.NEXTAUTH_URL ?? 'http://localhost:3000'),
+    metadataBase: new URL(siteUrl()),
     title: 'JC Resolve | Manutenção sem dor de cabeça',
     description: 'Manutenção residencial em Valparaíso de Goiás e região: elétrica, hidráulica, refrigeração, reparos gerais e instalações. Agende online.',
-    icons: { icon: '/favicon.svg', shortcut: '/favicon.svg' },
+    icons: { icon: [{ url: '/icon.png', type: 'image/png' }, { url: '/favicon.svg', type: 'image/svg+xml' }], shortcut: '/icon.png', apple: '/apple-touch-icon.png' },
     openGraph: {
+      type: 'website',
+      siteName: 'JC Resolve',
+      locale: 'pt_BR',
       title: 'JC Resolve | Manutenção sem dor de cabeça',
       description: 'Conte o que aconteceu, encontre a solução e agende o serviço.',
       images: ['/og-image.png'],
@@ -30,9 +40,6 @@ export async function generateMetadata() {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <head>
-        <script src="https://apps.abacus.ai/chatllm/appllm-lib.js" />
-      </head>
       <body className={`${dmSans.variable} ${manrope.variable} font-sans`}>
         <Providers>
           <a href="#conteudo" className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-[100] focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground">

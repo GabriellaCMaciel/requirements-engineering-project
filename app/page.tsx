@@ -1,11 +1,11 @@
 /* HOME — site institucional + assistente de serviço + acesso à Loja */
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, CalendarCheck, Droplets, Hammer, MessageCircle, Plug, Search, ShoppingBag, Snowflake, Wrench, Zap } from 'lucide-react';
+import { ArrowRight, CalendarCheck, Droplets, Hammer, Instagram, MessageCircle, Plug, Search, ShoppingBag, Snowflake, Wrench, Zap } from 'lucide-react';
 import { QuizAssistant } from '@/components/quiz-assistant';
 import { ProductCard } from '@/components/product-card';
 import { getProducts } from '@/lib/products';
-import { SERVICE_AREAS, SERVICE_REGION, ServiceArea } from '@/lib/constants';
+import { INSTAGRAM_HANDLE, INSTAGRAM_URL, SERVICE_AREAS, SERVICE_REGION, ServiceArea } from '@/lib/constants';
 import { whatsappLink } from '@/lib/whatsapp';
 
 export const dynamic = 'force-dynamic';
@@ -146,6 +146,9 @@ export default async function HomePage() {
             <p className="max-w-lg text-white/70">Tire dúvidas ou peça um orçamento direto pelo WhatsApp.</p>
             <a href={whatsappLink('Olá, JC Resolve! Gostaria de um orçamento.')} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3.5 font-bold text-primary-foreground hover:brightness-95">
               <MessageCircle className="h-5 w-5" /> Chamar no WhatsApp
+            </a>
+            <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-semibold text-white/80 hover:text-primary">
+              <Instagram className="h-4 w-4" /> Siga no Instagram {INSTAGRAM_HANDLE}
             </a>
           </div>
         </div>

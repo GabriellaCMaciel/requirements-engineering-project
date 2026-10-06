@@ -42,8 +42,11 @@ export interface AdminOrder {
 export interface AdminProduct {
   id: string;
   name: string;
+  description: string;
   price: number;
   category: string;
+  serviceArea: string;
   available: boolean;
   image: string;
+  tags: string[];
 }
