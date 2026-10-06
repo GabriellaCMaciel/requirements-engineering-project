@@ -43,8 +43,8 @@ export default async function HomePage() {
               <a href="#assistente" className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3.5 font-bold text-primary-foreground shadow-lg transition hover:brightness-95">
                 <Search className="h-5 w-5" /> Encontrar solução
               </a>
-              <Link href="/loja" className="inline-flex items-center justify-center gap-2 rounded-lg bg-white/10 px-6 py-3.5 font-semibold text-white backdrop-blur transition hover:bg-white/20">
-                <ShoppingBag className="h-5 w-5" /> Ir para a Loja
+              <Link href="/loja" className="inline-flex items-center justify-center gap-1.5 px-2 py-3.5 text-sm font-medium text-white/70 underline-offset-4 transition hover:text-white hover:underline">
+                <ShoppingBag className="h-4 w-4" /> Ir para a Loja
               </Link>
             </div>
           </div>
