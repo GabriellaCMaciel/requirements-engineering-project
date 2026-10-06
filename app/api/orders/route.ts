@@ -5,6 +5,7 @@
  * ===================================================================== */
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
+import { loadServiceTypes } from '@/lib/service-types';
 import { prisma } from '@/lib/db';
 import {
   AREA_TO_PROFESSIONAL, CONFLICT_MESSAGE, SERVICE_AREAS, SERVICE_TYPES, ServiceArea, ServiceType, URGENCIES, Urgency,
@@ -28,6 +29,8 @@ export async function POST(req: Request) {
     const user = await prisma.user.findUnique({ where: { id: session.user.id } });
     if (!user) return NextResponse.json({ error: 'Conta não encontrada.' }, { status: 401 });
 
+    await loadServiceTypes(); // preços/durações atuais definidos pelo admin
+
     /* ---------- 1. Produtos (preços sempre vindos do banco) ---------- */
     const rawItems: { productId: string; quantity: number }[] = Array.isArray(body?.items) ? body.items : [];
     const ids = rawItems.map((i) => String(i?.productId ?? ''));
@@ -41,6 +44,14 @@ export async function POST(req: Request) {
       .filter((i): i is { productId: string; name: string; unitPrice: number; quantity: number } => i !== null);
     if (items.length !== rawItems.length) {
       return NextResponse.json({ error: 'Algum produto do carrinho não está mais disponível. Revise o carrinho.' }, { status: 400 });
+    }
+
+    // Estoque: não deixa pedir mais do que existe
+    for (const i of items) {
+      const p = dbProducts.find((d) => d.id === i.productId);
+      if (p && i.quantity > p.stock) {
+        return NextResponse.json({ error: p.stock > 0 ? `Só há ${p.stock} unidade(s) de “${p.name}” em estoque. Ajuste o carrinho.` : `“${p.name}” está sem estoque. Remova do carrinho.` }, { status: 400 });
+      }
     }
 
     /* ---------- 2. Serviço (opcional) ---------- */

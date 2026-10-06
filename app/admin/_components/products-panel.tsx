@@ -5,7 +5,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Clock, Info, Package, Pencil, Plus, Trash2, Wrench } from 'lucide-react';
+import { Info, Package, Pencil, Plus, Trash2, Wrench } from 'lucide-react';
 import { formatBRL, SERVICE_AREAS, SERVICE_TYPE_KEYS, SERVICE_TYPES, type ServiceArea } from '@/lib/constants';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
@@ -15,8 +15,68 @@ import type { AdminProduct } from './types';
 
 const AREA_KEYS = Object.keys(SERVICE_AREAS) as ServiceArea[];
 
-interface FormState { name: string; description: string; price: string; serviceArea: ServiceArea; category: string; image: string; tags: string; available: boolean }
-const EMPTY: FormState = { name: '', description: '', price: '', serviceArea: 'ELETRICA', category: '', image: '', tags: '', available: true };
+interface FormState { stock: string; name: string; description: string; price: string; serviceArea: ServiceArea; category: string; image: string; tags: string; available: boolean }
+const EMPTY: FormState = { stock: '10', name: '', description: '', price: '', serviceArea: 'ELETRICA', category: '', image: '', tags: '', available: true };
+
+/* Edição dos 3 tipos de serviço: nome, preço, duração (agenda) e descrição */
+function ServiceTypesEditor() {
+  const router = useRouter();
+  const [vals, setVals] = useState(() =>
+    Object.fromEntries(SERVICE_TYPE_KEYS.map((k) => [k, { label: SERVICE_TYPES[k].label, price: String(SERVICE_TYPES[k].price).replace('.', ','), durationMin: String(SERVICE_TYPES[k].durationMin), description: SERVICE_TYPES[k].description }])),
+  );
+  const [savingKey, setSavingKey] = useState('');
+
+  const setField = (k: string, f: 'label' | 'price' | 'durationMin' | 'description', v: string) => setVals((p) => ({ ...p, [k]: { ...p[k], [f]: v } }));
+
+  const save = async (k: string) => {
+    setSavingKey(k);
+    try {
+      const res = await fetch(`/api/admin/service-types/${k}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(vals[k]) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error ?? 'Não foi possível salvar.');
+      toast.success('Serviço atualizado. Já vale no site e nos novos agendamentos.');
+      router.refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erro.');
+    } finally {
+      setSavingKey('');
+    }
+  };
+
+  return (
+    <section className="card-jc p-5">
+      <h2 className="flex items-center gap-2 font-display text-lg font-bold"><Wrench className="h-5 w-5 text-deep" /> Serviços oferecidos</h2>
+      <p className="mt-1 flex items-start gap-1.5 text-xs text-muted-foreground"><Info className="mt-0.5 h-3.5 w-3.5 shrink-0" /> Edite nome, preço, tempo de agenda e descrição. Vale para novos agendamentos; os já marcados mantêm o horário e o preço combinados.</p>
+      <div className="mt-3 grid gap-3 lg:grid-cols-3">
+        {SERVICE_TYPE_KEYS.map((k) => (
+          <div key={k} className="space-y-2 rounded-lg bg-muted p-4">
+            <div>
+              <label className="field-label" htmlFor={`st-label-${k}`}>Nome</label>
+              <input id={`st-label-${k}`} className="field" value={vals[k].label} onChange={(e) => setField(k, 'label', e.target.value)} maxLength={60} />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="field-label" htmlFor={`st-price-${k}`}>Preço (R$)</label>
+                <input id={`st-price-${k}`} className="field" inputMode="decimal" value={vals[k].price} onChange={(e) => setField(k, 'price', e.target.value)} />
+              </div>
+              <div>
+                <label className="field-label" htmlFor={`st-dur-${k}`}>Tempo (min)</label>
+                <select id={`st-dur-${k}`} className="field" value={vals[k].durationMin} onChange={(e) => setField(k, 'durationMin', e.target.value)}>
+                  {Array.from({ length: 20 }, (_, i) => (i + 1) * 30).map((m) => <option key={m} value={m}>{m} min{m % 60 === 0 ? ` (${m / 60}h)` : ''}</option>)}
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="field-label" htmlFor={`st-desc-${k}`}>Descrição</label>
+              <textarea id={`st-desc-${k}`} rows={2} maxLength={200} className="w-full rounded-lg border border-input p-3 text-sm focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30" value={vals[k].description} onChange={(e) => setField(k, 'description', e.target.value)} />
+            </div>
+            <button type="button" onClick={() => save(k)} disabled={savingKey === k} className="h-10 w-full rounded-lg bg-primary text-sm font-bold text-primary-foreground disabled:opacity-60">{savingKey === k ? 'Salvando…' : 'Salvar serviço'}</button>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 export function ProductsPanel({ products }: { products: AdminProduct[] }) {
   const router = useRouter();
@@ -35,7 +95,7 @@ export function ProductsPanel({ products }: { products: AdminProduct[] }) {
     setEditing(p);
     setForm({
       name: p.name, description: p.description, price: String(p.price).replace('.', ','), serviceArea: (p.serviceArea in SERVICE_AREAS ? p.serviceArea : 'REPAROS') as ServiceArea,
-      category: p.category, image: p.image, tags: p.tags.join(', '), available: p.available,
+      category: p.category, image: p.image, tags: p.tags.join(', '), available: p.available, stock: String(p.stock),
     });
     setFormOpen(true);
   };
@@ -106,19 +166,7 @@ export function ProductsPanel({ products }: { products: AdminProduct[] }) {
 
   return (
     <div className="space-y-6">
-      <section className="card-jc p-5">
-        <h2 className="flex items-center gap-2 font-display text-lg font-bold"><Wrench className="h-5 w-5 text-deep" /> Tipos de agendamento</h2>
-        <p className="mt-1 flex items-start gap-1.5 text-xs text-muted-foreground"><Info className="mt-0.5 h-3.5 w-3.5 shrink-0" /> Valores e durações de simulação. Para alterar, edite o arquivo <code>lib/constants.ts</code> (SERVICE_TYPES).</p>
-        <div className="mt-3 grid gap-3 sm:grid-cols-3">
-          {SERVICE_TYPE_KEYS.map((k) => (
-            <div key={k} className="rounded-lg bg-muted p-4">
-              <p className="font-bold">{SERVICE_TYPES[k].label}</p>
-              <p className="font-display text-2xl font-extrabold">{formatBRL(SERVICE_TYPES[k].price)}</p>
-              <p className="flex items-center gap-1 text-xs text-muted-foreground"><Clock className="h-3 w-3" /> {SERVICE_TYPES[k].durationMin} min de agenda</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      <ServiceTypesEditor />
 
       <section className="card-jc p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -144,6 +192,7 @@ export function ProductsPanel({ products }: { products: AdminProduct[] }) {
               <div className="min-w-0 flex-1">
                 <p className="truncate font-semibold">{p.name}</p>
                 <p className="text-xs text-muted-foreground">{p.category} • {formatBRL(p.price)}</p>
+                <p className={`text-xs font-semibold ${p.stock <= 0 ? 'text-destructive' : p.stock <= 3 ? 'text-amber-700' : 'text-muted-foreground'}`}>Estoque: {p.stock}{p.stock <= 0 ? ' (sem estoque)' : p.stock <= 3 ? ' (acabando)' : ''}</p>
               </div>
               <button type="button" onClick={() => openEdit(p)} aria-label={`Editar ${p.name}`} title="Editar" className="grid h-9 w-9 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-card hover:text-foreground">
                 <Pencil className="h-4 w-4" />
@@ -185,6 +234,11 @@ export function ProductsPanel({ products }: { products: AdminProduct[] }) {
                   {AREA_KEYS.map((k) => <option key={k} value={k}>{SERVICE_AREAS[k].label}</option>)}
                 </select>
               </div>
+            </div>
+            <div>
+              <label className="field-label" htmlFor="pf-stock">Quantidade em estoque *</label>
+              <input id="pf-stock" className="field" type="number" min={0} step={1} inputMode="numeric" value={form.stock} onChange={(e) => set('stock', e.target.value)} required />
+              <p className="mt-1 text-xs text-muted-foreground">É o máximo que o cliente consegue colocar no carrinho. Baixa automaticamente quando você confirma o pagamento de um pedido; corrija aqui quando precisar.</p>
             </div>
             <div>
               <label className="field-label" htmlFor="pf-cat">Categoria <span className="font-normal text-muted-foreground">(opcional — se vazio, usa a área)</span></label>

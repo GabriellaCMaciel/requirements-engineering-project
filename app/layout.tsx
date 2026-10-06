@@ -1,3 +1,5 @@
+import { loadServiceTypes } from '@/lib/service-types';
+import { ServiceTypesHydrator } from '@/components/service-types-hydrator';
 import { DM_Sans, Manrope } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/sonner';
@@ -37,11 +39,13 @@ export async function generateMetadata() {
   };
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const serviceTypes = await loadServiceTypes();
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={`${dmSans.variable} ${manrope.variable} font-sans`}>
         <Providers>
+          <ServiceTypesHydrator config={serviceTypes} />
           <a href="#conteudo" className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-[100] focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground">
             Pular para o conteúdo
           </a>

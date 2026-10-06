@@ -22,6 +22,7 @@ export interface CartProduct {
   price: number;
   image: string;
   quantity: number;
+  stock?: number; // estoque conhecido (atualizado ao abrir o carrinho); limita a quantidade
 }
 
 export interface CartService {
@@ -50,6 +51,11 @@ interface CartContextValue extends CartState {
 const EMPTY: CartState = { products: [], service: null };
 const CartContext = createContext<CartContextValue | null>(null);
 
+/** Máximo por produto: o estoque (se conhecido), no máximo 99 */
+function maxOf(stock?: number): number {
+  return typeof stock === 'number' ? Math.max(1, Math.min(99, stock)) : 99;
+}
+
 /** Lê o carrinho salvo com segurança (JSON inválido vira carrinho vazio) */
 function readStorage(): CartState {
   try {
@@ -74,6 +80,28 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setReady(true);
   }, []);
 
+  // 1.1) Sincroniza o estoque atual (o admin pode ter alterado): atualiza o limite e ajusta quantidades acima dele
+  useEffect(() => {
+    if (!ready) return;
+    const ids = state.products.map((p) => p.productId);
+    if (ids.length === 0) return;
+    let cancelled = false;
+    fetch(`/api/stock?ids=${encodeURIComponent(ids.join(','))}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        const stock: Record<string, number> | undefined = data?.stock;
+        if (cancelled || !stock) return;
+        setState((prev) => ({
+          ...prev,
+          products: prev.products.map((it) => (it.productId in stock ? { ...it, stock: stock[it.productId], quantity: Math.min(it.quantity, maxOf(stock[it.productId])) } : it)),
+        }));
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+    // roda ao abrir o site e quando muda a lista de produtos (não a cada alteração de quantidade)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, state.products.map((p) => p.productId).join(',')]);
+
   // 2) A cada mudança: salva de novo no localStorage
   useEffect(() => {
     if (!ready) return;
@@ -88,8 +116,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setState((prev) => {
       const exists = prev.products.find((it) => it.productId === p.productId);
       const products = exists
-        ? prev.products.map((it) => (it.productId === p.productId ? { ...it, quantity: Math.min(99, it.quantity + quantity) } : it))
-        : [...prev.products, { ...p, quantity: Math.max(1, quantity) }];
+        ? prev.products.map((it) => (it.productId === p.productId ? { ...it, stock: p.stock ?? it.stock, quantity: Math.min(maxOf(p.stock ?? it.stock), it.quantity + quantity) } : it))
+        : [...prev.products, { ...p, quantity: Math.min(maxOf(p.stock), Math.max(1, quantity)) }];
       return { ...prev, products };
     });
   }, []);
@@ -97,7 +125,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const setQuantity = useCallback((productId: string, quantity: number) => {
     setState((prev) => ({
       ...prev,
-      products: prev.products.map((it) => (it.productId === productId ? { ...it, quantity: Math.min(99, Math.max(1, Math.floor(quantity || 1))) } : it)),
+      products: prev.products.map((it) => (it.productId === productId ? { ...it, quantity: Math.min(maxOf(it.stock), Math.max(1, Math.floor(quantity || 1))) } : it)),
     }));
   }, []);
 

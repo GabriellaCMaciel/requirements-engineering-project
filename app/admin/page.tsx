@@ -6,6 +6,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db';
+import { loadServiceTypes } from '@/lib/service-types';
 import { formatAddress } from '@/lib/whatsapp';
 import { AdminDashboard } from './_components/admin-dashboard';
 import type { AdminAppointment, AdminOrder, AdminProduct } from './_components/types';
@@ -17,6 +18,7 @@ export default async function AdminPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/login?callbackUrl=/admin');
   if (session.user.role !== 'ADMIN') redirect('/conta');
+  await loadServiceTypes(); // valores atuais dos tipos de serviço (editáveis no painel)
 
   const [appointments, orders, products] = await Promise.all([
     prisma.appointment.findMany({
@@ -49,7 +51,7 @@ export default async function AdminPage() {
     address: formatAddress(o), appointmentId: o.appointment?.id ?? null,
   }));
 
-  const prods: AdminProduct[] = products.map((p) => ({ id: p.id, name: p.name, description: p.description, price: p.price, category: p.category, serviceArea: p.serviceArea, available: p.available, image: p.image, tags: p.tags ?? [] }));
+  const prods: AdminProduct[] = products.map((p) => ({ id: p.id, name: p.name, description: p.description, price: p.price, category: p.category, serviceArea: p.serviceArea, available: p.available, stock: p.stock, image: p.image, tags: p.tags ?? [] }));
 
   return <AdminDashboard appointments={appts} orders={ords} products={prods} />;
 }

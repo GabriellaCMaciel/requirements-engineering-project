@@ -80,6 +80,8 @@ model Product {
   images      String[]
   tags        String[]
   available   Boolean     @default(true)
+  // Quantidade em estoque. Baixa quando o admin confirma o pagamento do pedido.
+  stock       Int         @default(20)
   isDemo      Boolean     @default(true)
   createdAt   DateTime    @default(now())
   orderItems  OrderItem[]
@@ -165,4 +167,17 @@ model Appointment {
   @@index([professional, date])
   @@index([date])
   @@index([userId])
+}
+
+// =====================================================================
+// TIPOS DE SERVIÇO EDITÁVEIS PELO ADMIN (sobrepõem os valores padrão de lib/constants.ts)
+// key = SIMPLES | INTERMEDIARIO | COMPLEXO
+// =====================================================================
+model ServiceTypeConfig {
+  key         String   @id
+  label       String
+  price       Float
+  durationMin Int
+  description String
+  updatedAt   DateTime @updatedAt
 }

@@ -14,8 +14,10 @@ export function ProductCard({ product }: { product: ProductDTO }) {
   const { addProduct } = useCart();
   const [imgError, setImgError] = useState(false);
 
+  const inStock = product.available && product.stock > 0;
   const handleAdd = () => {
-    addProduct({ productId: product.id, name: product.name, price: product.price, image: product.image });
+    if (!inStock) return;
+    addProduct({ productId: product.id, name: product.name, price: product.price, image: product.image, stock: product.stock });
     toast.success(`${product.name} adicionado ao carrinho.`);
   };
 
@@ -37,15 +39,15 @@ export function ProductCard({ product }: { product: ProductDTO }) {
         <div className="mt-auto flex items-end justify-between gap-2 pt-2">
           <div>
             <p className="font-display text-lg font-extrabold">{formatBRL(product.price)}</p>
-            <p className={`flex items-center gap-1 text-[11px] font-medium ${product.available ? 'text-success' : 'text-destructive'}`}>
-              {product.available ? <PackageCheck className="h-3.5 w-3.5" /> : <PackageX className="h-3.5 w-3.5" />}
-              {product.available ? 'Disponível (demo)' : 'Indisponível'}
+            <p className={`flex items-center gap-1 text-[11px] font-medium ${inStock ? 'text-success' : 'text-destructive'}`}>
+              {inStock ? <PackageCheck className="h-3.5 w-3.5" /> : <PackageX className="h-3.5 w-3.5" />}
+              {!product.available ? 'Indisponível' : product.stock <= 0 ? 'Sem estoque' : `${product.stock} em estoque`}
             </p>
           </div>
           <button
             type="button"
             onClick={handleAdd}
-            disabled={!product.available}
+            disabled={!inStock}
             aria-label={`Adicionar ${product.name} ao carrinho`}
             className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground shadow-sm transition hover:brightness-95 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40"
           >
