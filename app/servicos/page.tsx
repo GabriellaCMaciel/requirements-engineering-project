@@ -2,12 +2,14 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Clock, Info, Search, UserCog } from 'lucide-react';
+import { loadServiceTypes } from '@/lib/service-types';
 import { RequestServiceButton } from '@/components/request-service-button';
 import { AREA_TO_PROFESSIONAL, formatBRL, PROFESSIONALS, SERVICE_AREAS, SERVICE_TYPE_KEYS, SERVICE_TYPES, ServiceArea } from '@/lib/constants';
 
 export const metadata = { title: 'Serviços | JC Resolve' };
 
-export default function ServicosPage() {
+export default async function ServicosPage() {
+  await loadServiceTypes();
   return (
     <>
       <section className="bg-navy py-14 text-white">

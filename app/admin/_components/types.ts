@@ -47,6 +47,7 @@ export interface AdminProduct {
   category: string;
   serviceArea: string;
   available: boolean;
+  stock: number;
   image: string;
   tags: string[];
 }

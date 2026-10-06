@@ -2,6 +2,7 @@
  * PÁGINA DE CONFIRMAÇÃO / DETALHE DO PEDIDO
  * Apenas o DONO do pedido ou o administrador pode visualizar.
  * ===================================================================== */
+import { loadServiceTypes } from '@/lib/service-types';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { CalendarClock, CheckCircle2, ClipboardList, MapPin, MessageCircle, Package, User, Wrench } from 'lucide-react';
@@ -15,6 +16,7 @@ export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Pedido | JC Resolve' };
 
 export default async function PedidoPage({ params }: { params: Promise<{ id: string }> }) {
+  await loadServiceTypes();
   const { id } = await params;
   const session = await auth();
   if (!session?.user?.id) redirect(`/login?callbackUrl=/pedido/${id}`);

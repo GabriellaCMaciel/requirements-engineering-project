@@ -26,6 +26,7 @@ export function OrdersPanel({ orders }: { orders: AdminOrder[] }) {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error ?? 'Não foi possível alterar o status.');
       toast.success(`Pedido ${o.code}: ${ORDER_STATUS[status] ?? status}`);
+      if (Array.isArray(data?.lowStock) && data.lowStock.length) toast.warning(`Estoque insuficiente para: ${data.lowStock.join(', ')}. Ajuste em Produtos.`);
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Erro ao alterar status.');

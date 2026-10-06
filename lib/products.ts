@@ -12,6 +12,7 @@ export interface ProductDTO {
   images: string[];
   tags: string[];
   available: boolean;
+  stock: number;
 }
 
 export async function getProducts(): Promise<ProductDTO[]> {
@@ -19,7 +20,7 @@ export async function getProducts(): Promise<ProductDTO[]> {
     const rows = await prisma.product.findMany({ orderBy: [{ category: 'asc' }, { name: 'asc' }] });
     return rows.map((p) => ({
       id: p.id, name: p.name, description: p.description, price: p.price, category: p.category,
-      serviceArea: p.serviceArea, image: p.image, images: p.images ?? [], tags: p.tags ?? [], available: p.available,
+      serviceArea: p.serviceArea, image: p.image, images: p.images ?? [], tags: p.tags ?? [], available: p.available, stock: p.stock,
     }));
   } catch (err) {
     console.error('Erro ao carregar produtos:', err);

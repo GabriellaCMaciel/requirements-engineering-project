@@ -89,20 +89,20 @@ export function CartView() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <Link href={`/loja/${p.productId}`} className="line-clamp-2 text-sm font-semibold hover:underline">{p.name}</Link>
-                    <p className="text-xs text-muted-foreground">{formatBRL(p.price)} cada</p>
+                    <p className="text-xs text-muted-foreground">{formatBRL(p.price)} cada{typeof p.stock === 'number' ? ` • ${p.stock} em estoque` : ''}</p>
                   </div>
                   <div className="flex items-center rounded-lg bg-muted" role="group" aria-label={`Quantidade de ${p.name}`}>
                     <button type="button" onClick={() => (p.quantity <= 1 ? removeProduct(p.productId) : setQuantity(p.productId, p.quantity - 1))} aria-label="Diminuir" className="grid h-9 w-9 place-items-center hover:bg-accent"><Minus className="h-3.5 w-3.5" /></button>
                     <input
                       type="number"
                       min={1}
-                      max={99}
+                      max={Math.max(1, Math.min(99, p.stock ?? 99))}
                       value={p.quantity}
                       onChange={(e) => setQuantity(p.productId, Number(e.target.value))}
                       aria-label="Quantidade"
                       className="w-10 bg-transparent text-center text-sm font-bold [appearance:textfield] focus:outline-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
-                    <button type="button" onClick={() => setQuantity(p.productId, p.quantity + 1)} aria-label="Aumentar" className="grid h-9 w-9 place-items-center hover:bg-accent"><Plus className="h-3.5 w-3.5" /></button>
+                    <button type="button" onClick={() => setQuantity(p.productId, p.quantity + 1)} disabled={p.quantity >= Math.min(99, p.stock ?? 99)} aria-label="Aumentar" className="grid disabled:opacity-40 h-9 w-9 place-items-center hover:bg-accent"><Plus className="h-3.5 w-3.5" /></button>
                   </div>
                   <p className="w-24 text-right text-sm font-bold">{formatBRL(p.price * p.quantity)}</p>
                   <button type="button" onClick={() => removeProduct(p.productId)} aria-label={`Remover ${p.name}`} className="grid h-9 w-9 place-items-center rounded-md text-destructive hover:bg-destructive/10"><Trash2 className="h-4 w-4" /></button>

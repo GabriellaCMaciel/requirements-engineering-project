@@ -10,6 +10,7 @@ export interface ProductInput {
   image: string;
   tags: string[];
   available: boolean;
+  stock: number;
 }
 
 type Result = { ok: true; data: ProductInput } | { ok: false; error: string };
@@ -41,10 +42,13 @@ export function parseProductInput(body: unknown): Result {
     return { ok: false, error: 'O link da imagem deve começar com http:// ou https://.' };
   }
 
+  const stock = Math.floor(Number(String(b.stock ?? '0').replace(',', '.')));
+  if (!Number.isFinite(stock) || stock < 0 || stock > 100000) return { ok: false, error: 'Informe a quantidade em estoque (0 ou mais).' };
+
   const rawTags = Array.isArray(b.tags) ? b.tags : String(b.tags ?? '').split(',');
   const tags = rawTags.map((t) => String(t).trim().toLowerCase()).filter(Boolean).slice(0, 12);
 
-  return { ok: true, data: { name, description, price: Math.round(price * 100) / 100, category, serviceArea, image, tags, available: b.available !== false } };
+  return { ok: true, data: { name, description, price: Math.round(price * 100) / 100, category, serviceArea, image, tags, available: b.available !== false, stock } };
 }
 
 /** Gera um id legível e único a partir do nome (ex.: "torneira-cozinha-k3x9") */

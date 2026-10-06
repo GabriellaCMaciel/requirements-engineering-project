@@ -48,7 +48,7 @@ export function QuizAssistant({ products }: { products: ProductDTO[] }) {
     if (inCart(p.id)) {
       removeProduct(p.id);
     } else {
-      addProduct({ productId: p.id, name: p.name, price: p.price, image: p.image });
+      addProduct({ productId: p.id, name: p.name, price: p.price, image: p.image, stock: p.stock });
       toast.success(`${p.name} adicionado ao carrinho.`);
     }
   };
