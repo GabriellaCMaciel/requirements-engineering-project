@@ -25,7 +25,7 @@ export async function generateMetadata() {
     metadataBase: new URL(siteUrl()),
     title: 'JC Resolve | Manutenção sem dor de cabeça',
     description: 'Manutenção residencial em Valparaíso de Goiás e região: elétrica, hidráulica, refrigeração, reparos gerais e instalações. Agende online.',
-    icons: { icon: '/favicon.svg', shortcut: '/favicon.svg' },
+    icons: { icon: [{ url: '/icon.png', type: 'image/png' }, { url: '/favicon.svg', type: 'image/svg+xml' }], shortcut: '/icon.png', apple: '/apple-touch-icon.png' },
     openGraph: {
       type: 'website',
       siteName: 'JC Resolve',
