@@ -18,9 +18,17 @@ async function upsertUser(email: string, password: string, name: string, role: s
 }
 
 async function main() {
-  // Credenciais de TESTE do administrador mestre (não são de produção)
-  await upsertUser('admin@jcresolve.com', 'JCResolve@123', 'Administrador JC Resolve', 'ADMIN');
-  await upsertUser('abacus-c3efdd8c@example.com', 'Lp25iK$kNy', 'Conta de testes', 'ADMIN');
+  // O administrador vem do .env (nunca escreva senhas neste arquivo: o repositório é público).
+  //   ADMIN_EMAIL=...  ADMIN_PASSWORD=...  (mínimo de 10 caracteres)
+  const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (adminEmail && adminPassword) {
+    if (adminPassword.length < 10) throw new Error('ADMIN_PASSWORD deve ter pelo menos 10 caracteres.');
+    await upsertUser(adminEmail, adminPassword, 'Administrador JC Resolve', 'ADMIN');
+    console.log(`Administrador configurado: ${adminEmail}`);
+  } else {
+    console.warn('ADMIN_EMAIL/ADMIN_PASSWORD não definidos: nenhum administrador foi criado.');
+  }
 
   for (const p of DEMO_PRODUCTS) {
     const data = { ...p, images: [p.image], isDemo: true };

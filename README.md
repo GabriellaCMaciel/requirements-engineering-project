@@ -109,12 +109,17 @@ A aplicação ficará disponível em **http://localhost:3000**.
 
 ## 🔐 Acesso administrativo (ambiente de demonstração)
 
-Após popular o banco com o seed, é possível acessar o painel `/admin` com uma conta de demonstração:
+O administrador é criado pelo seed a partir de variáveis de ambiente (as credenciais **não** ficam no código):
 
-- **E-mail:** `admin@jcresolve.com`
-- **Senha:** `JCResolve@123`
+```bash
+# no .env
+ADMIN_EMAIL=seu-email@exemplo.com
+ADMIN_PASSWORD=uma-senha-forte-com-10-ou-mais-caracteres
+```
 
-> Credenciais destinadas apenas a avaliação/demonstração. Em produção, altere a senha e remova contas de teste.
+Depois rode `yarn prisma db seed` e entre em `/admin` com esse e-mail e senha.
+
+> Senhas que já foram publicadas em versões anteriores deste repositório devem ser consideradas comprometidas: ao subir esta mudança, rode o seed com uma senha nova.
 
 ---
 
